@@ -1,0 +1,47 @@
+#!/usr/bin/php
+<?php
+function prompt ($msg, $validador = false) {
+    while (true) {
+        echo ($msg . ": ");
+        $valor = fgets (STDIN);
+        if ($valor === false) {
+            die ("Erro de leitura do STDIN!\n");
+        }
+        $valor = trim ($valor);
+        if (is_callable ($validador)) {
+            if (call_user_func ($validador, $valor)) {
+                return ($valor);
+            } else {
+                echo ("Valor invalido!\n\n");
+            }
+        } else {
+            return ($valor);
+        }
+    }
+}
+
+function mkdate ($entrada) {
+    if (preg_match ("/^\\s*(\\d+)\\s*\\/\\s*(\\d+)\\s*\\/\\s*(\\d+)\\s*\$/", $entrada, $matches)) {
+        $resp = new DateTime ();
+        if ($resp->setDate ($matches[3], $matches[2], $matches[1])) {
+            return ($resp);
+        }
+    }
+    return (false);
+}
+
+$montante = prompt ("Valor atual (R\$)", 'is_numeric');
+$capital = prompt ("Valor que foi aplicado (R\$)", 'is_numeric');
+$data_aplic = prompt ("Data de aplicação (dd/mm/aaaa)", 'mkdate');
+$data_aplic = mkdate ($data_aplic);
+$diffdatas = $data_aplic->diff (new DateTime());
+$diffmeses = $diffdatas->y * 12 + $diffdatas->m;
+
+echo ("A aplicação tem:\n");
+echo ("  + " . $diffdatas->days . " dias de vida.\n");
+echo ("  + " . $diffmeses . " meses de vida.\n");
+
+$juros = pow ($montante / $capital, 1 / $diffmeses) - 1;
+echo ("A taxa de juros media foi de:\n");
+echo ("  + " . round ($juros * 100, 2) . " % a.m.\n");
+echo ("  + " . round ((pow (1 + $juros, 12) - 1) * 100, 2) . " % a.a.\n");
