@@ -30,7 +30,7 @@ function mkdate ($entrada) {
     return (false);
 }
 
-$montante = prompt ("Valor atual (R\$)", 'is_numeric');
+$montante = prompt ("Valor bruto atual (R\$)", 'is_numeric');
 $capital = prompt ("Valor que foi aplicado (R\$)", 'is_numeric');
 $data_aplic = prompt ("Data de aplicação (dd/mm/aaaa)", 'mkdate');
 $data_aplic = mkdate ($data_aplic);
@@ -45,3 +45,31 @@ $juros = pow ($montante / $capital, 1 / $diffmeses) - 1;
 echo ("A taxa de juros media foi de:\n");
 echo ("  + " . round ($juros * 100, 2) . " % a.m.\n");
 echo ("  + " . round ((pow (1 + $juros, 12) - 1) * 100, 2) . " % a.a.\n");
+
+$irpf_faixas = array (180, 360, 720);
+$irpf_aliquotas = array (.225, .2, .175, .15);
+$l_faixas = count ($irpf_faixas);
+for ($i = 0; $i < $l_faixas; $i++) {
+    if ($diffdatas->days <= $irpf_faixas[$i]) {
+        break;
+    }
+}
+$rendimento = $montante - $capital;
+$aliquota = round ($rendimento * $irpf_aliquotas[$i], 2);
+echo ("A aliquota de IRPF atual (" . ($irpf_aliquotas[$i] * 100) . "%) é: R\$ " . number_format ($aliquota, 2, '.', '') . " .\n");
+echo ("O valor liquido atual é: R\$ " . number_format ($montante - $aliquota, 2, '.', '') . " .\n");
+
+while ($i < $l_faixas) {
+    $i++;
+    $data_fut = clone $data_aplic;
+    $data_fut->add (new DateInterval ("P" . ($irpf_faixas[$i - 1] + 2) . "D"));
+    $diffdatas = $data_aplic->diff ($data_fut);
+    $diffmeses = $diffdatas->y * 12 + $diffdatas->m;
+    $montante = round ($capital * pow (1 + $juros, $diffmeses), 2);
+    $rendimento = $montante - $capital;
+    $aliquota = round ($rendimento * $irpf_aliquotas[$i], 2);
+    echo ("\nEm " . $data_fut->format("d/m/Y") . ":\n");
+    echo ("  + O valor bruto será: R\$ " . number_format ($montante, 2, '.', '') . " .\n");
+    echo ("  + A aliquota de IRPF (" . ($irpf_aliquotas[$i] * 100) . "%) será: R\$ " . number_format ($aliquota, 2, '.', '') . " .\n");
+    echo ("  + O valor liquido será: R\$ " . number_format ($montante - $aliquota, 2, '.', '') . " .\n");
+}
